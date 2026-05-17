@@ -1,79 +1,113 @@
-# Como rodar localmente o projeto.
+# FCS — Financial Control System API
 
-## Pré-requisitos
+API REST para controle financeiro pessoal. Construída com Node.js, Express e PostgreSQL.
 
-1. **Instalar o Node.js** - [Baixar e instalar](https://nodejs.org/)
-2. **Instalar o PostgreSQL** - [Baixar e instalar](https://www.postgresql.org/download/)
+## Rodando com Docker (recomendado)
 
-## Configuração do Banco de Dados
+### Pré-requisito
 
-1. **Criar um banco de dados no PostgreSQL:**
-   - Após instalar o PostgreSQL, abra o terminal e conecte-se ao banco de dados com o comando:
-     ```bash
-     psql -U postgres
-     ```
-   - Crie um banco de dados para o projeto:
-     ```sql
-     CREATE DATABASE nome_do_banco;
-     ```
-   - Crie um usuário e defina a senha:
-     ```sql
-     CREATE USER nome_do_usuario WITH ENCRYPTED PASSWORD 'sua_senha';
-     ```
-   - Dê permissão ao usuário no banco de dados:
-     ```sql
-     GRANT ALL PRIVILEGES ON DATABASE nome_do_banco TO nome_do_usuario;
-     ```
-   
-2. **Configurar o arquivo `.env`** 
-    - Crie um arquivo `.env` na raiz do projeto e adicione as configurações de banco de dados. Por exemplo:
-     ```plaintext
-        DB_USERNAME_DEV=your_db_username
-        DB_PASSWORD_DEV=your_db_password
-        DB_DATABASE_DEV=your_db_name
-        DB_HOST_DEV=your_db_port
-        DB_DIALECT_DEV=your_db_dialect
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-        DB_USERNAME_PROD=your_db_username
-        DB_PASSWORD_PROD=your_db_password
-        DB_DATABASE_PROD=your_db_name
-        DB_HOST_PROD=your_db_port
-        DB_DIALECT_PROD=your_db_dialect
+### 1. Clone o repositório
 
-        PORT=your_port
-     ```
+```bash
+git clone https://github.com/ZBMF-Labs/FCS_backend.git
+cd FCS_backend
+```
 
-## Instalação do Projeto
+### 2. Configure o ambiente
 
-1. **Clone o repositório**:
-   ```bash
-   git clone https://github.com/ZBMF-Labs/FCS_backend.git
-   ```
-   
-2. **Instale as dependências**:
-   ```bash
-   cd FCS_backend
-   npm install
-   ```
+```bash
+cp .env.exemple .env
+```
 
-## Executar o Banco de Dados e Aplicar as Migrations
+Edite o `.env` e preencha as variáveis de e-mail e JWT:
 
-1. **Rodar as migrations para configurar o banco de dados**:
-   ```bash
-   npx sequelize db:migrate
-   ```
+```env
+JWT_SECRET=uma_chave_secreta_forte
+EMAIL_USER=seu_email@gmail.com
+EMAIL_PASS=sua_senha_de_app_gmail
+```
 
-## Executar o Projeto
+> As configurações de banco de dados já vêm com valores padrão para desenvolvimento.
 
-1. **Iniciar o servidor**:
-   ```bash
-   npm run dev
-   ```
-   
-2. O servidor estará disponível em `http://localhost:<porta>`
+### 3. Suba tudo
 
-## Observações
+```bash
+docker compose up --build
+```
 
-- Banco de dados local: Cada desenvolvedor terá uma cópia local do banco de dados e rodará as migrations para criar as tabelas. Isso permite que cada pessoa faça testes independentemente sem afetar o ambiente dos outros.
+O Docker vai subir o PostgreSQL e a API automaticamente. A API ficará disponível em `http://localhost:8080`.
 
-- Ambiente de desenvolvimento: Mantenha o arquivo .env fora do repositório principal para proteger as credenciais locais e compartilhe o arquivo ou um modelo de configuração diretamente entre os desenvolvedores.
+### Comandos úteis
+
+```bash
+docker compose up --build   # primeira vez ou após instalar dependências
+docker compose up           # subidas seguintes
+docker compose down         # parar tudo
+docker compose logs -f api  # ver logs em tempo real
+```
+
+> O código é montado como volume — alterações nos arquivos refletem automaticamente sem reiniciar o container.
+
+---
+
+## Rodando localmente (sem Docker)
+
+### Pré-requisitos
+
+- Node.js 20+
+- PostgreSQL 16+
+
+### 1. Instale as dependências
+
+```bash
+npm install
+```
+
+### 2. Configure o banco de dados
+
+```bash
+psql postgres -c "CREATE USER fcs_user WITH PASSWORD 'fcs_password';"
+psql postgres -c "CREATE DATABASE fcs_db OWNER fcs_user;"
+```
+
+### 3. Configure o `.env`
+
+```bash
+cp .env.exemple .env
+```
+
+### 4. Rode as migrations e inicie
+
+```bash
+npx sequelize db:migrate
+npm run dev
+```
+
+---
+
+## Endpoints principais
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/ZBMF` | Health check |
+| POST | `/users` | Criar usuário |
+| POST | `/login` | Autenticação |
+| GET | `/accounts` | Listar contas |
+| POST | `/accounts` | Criar conta |
+| GET | `/categories` | Listar categorias |
+| POST | `/categories` | Criar categoria |
+| GET | `/transactions` | Listar transações |
+| POST | `/transactions` | Criar transação |
+
+---
+
+## Stack
+
+- **Runtime:** Node.js
+- **Framework:** Express
+- **Banco de dados:** PostgreSQL
+- **ORM:** Sequelize
+- **Auth:** JWT + Bcrypt
+- **E-mail:** Nodemailer
